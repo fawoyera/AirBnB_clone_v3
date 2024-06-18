@@ -113,3 +113,29 @@ class TestFileStorage(unittest.TestCase):
         with open("file.json", "r") as f:
             js = f.read()
         self.assertEqual(json.loads(string), json.loads(js))
+
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
+    def test_get(self):
+        """Test the get method of FileStorage"""
+        storage = FileStorage()
+        state_obj = list(storage.all(State).values())[0]
+        get_state_obj = storage.get(State, state_obj.id)
+        self.assertIs(state_obj, get_state_obj,
+                      "object not found in FileStorage")
+
+    @unittest.skipIf(models.storage_t == 'db', "not testing file storage")
+    def test_count(self):
+        """Test the count method of FileStorage"""
+        storage = FileStorage()
+        state_count = len(storage.all(State))
+        count_state = storage.count(State)
+        self.assertEqual(state_count, count_state,
+                         "count method of file storage not correct")
+
+        # create new state object, save to storage then recount if incremented
+        new_state_obj = State(name="Oyo")
+        new_state_obj.save()
+
+        new_count_state = storage.count(State)
+        self.assertEqual(new_count_state, count_state + 1,
+                         "count method of FileStorage not incremented on new")
