@@ -60,6 +60,7 @@ class BaseModel:
 
     def to_dict(self):
         """returns a dictionary containing all keys/values of the instance"""
+        import inspect
         new_dict = self.__dict__.copy()
         if "created_at" in new_dict:
             new_dict["created_at"] = new_dict["created_at"].strftime(time)
@@ -68,6 +69,17 @@ class BaseModel:
         new_dict["__class__"] = self.__class__.__name__
         if "_sa_instance_state" in new_dict:
             del new_dict["_sa_instance_state"]
+
+        caller_frame = inspect.stack()[1]
+        if 'self' in caller_frame.frame.f_locals:
+            caller_class = caller_frame.frame.f_locals["self"].__class__
+            caller_class_name = caller_class.__name__
+        else:
+            caller_class_name = ""
+
+        if "password" in new_dict and caller_class_name != "FileStorage":
+            del new_dict["password"]
+
         return new_dict
 
     def delete(self):

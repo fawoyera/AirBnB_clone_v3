@@ -66,6 +66,7 @@ def add_user_object():
                  strict_slashes=False)
 def update_user_object(user_id):
     """route to update a User object by id"""
+    import hashlib
     user = storage.get(User, escape(user_id))
     if not user:
         abort(404)
@@ -77,6 +78,9 @@ def update_user_object(user_id):
 
     for key in data:
         if key not in ["id", "email", "created_at", "updated_at"]:
+            if key == "password":
+                md5_password = hashlib.md5(data[key].encode()).hexdigest()
+                data[key] = md5_password
             setattr(user, key, data[key])
     user.save()
 
